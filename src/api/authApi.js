@@ -8,7 +8,7 @@ authApi.interceptors.request.use( config => {
 
     config.headers = {
         ...config.headers,
-        'x_token': localStorage.getItem('x_token'),
+        'x-token': localStorage.getItem('x-token'),
     }
     return config;
 })

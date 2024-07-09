@@ -21,18 +21,18 @@ export const LoginPage = () => {
 
   const onLoginSubmit = (event) => {
     event.preventDefault();
-    startLogin({ correo: loginEmail, password: loginPassword });
+    startLogin({ Correo: loginEmail, Password: loginPassword });
   };
 
-  useEffect(() => {
-    if (errorMenssage !== undefined) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error en la autenticación',
-        text: errorMenssage
-      });
-    }
-  }, [errorMenssage]);
+  // useEffect(() => {
+  //   if (errorMenssage == undefined) {
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'Error en la autenticación',
+  //       text: errorMenssage
+  //     });
+  //   }
+  // }, [errorMenssage]);
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="background.default">

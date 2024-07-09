@@ -24,19 +24,42 @@ export const useAuthStore = (state, setState) => {
       setState(prevState => ({ ...prevState, errorMenssage: null }));
     }, 10);
   }, [setState]);
+ 
+  const getUsers = useCallback((users) => {
+    setState(prevState => ({
+      ...prevState,
+      users
+    }));
+  })
 
-  const startLogin = useCallback(async ({ correo, password }) => {
+  const starGetUsers = useCallback(async () => {
+      try {
+        const {data} = await authApi.get('users')
+        getUsers(data)
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: `Error  los usuarios: ${error}`,
+          icon: 'error',
+          customClass: {
+            container: 'swal2-container'
+          }
+        });
+      }
+  },[getUsers])
+
+  const startLogin = useCallback(async ({ Correo, Password }) => {
     try {
-      const { data } = await authApi.post('login', { correo, password });
+      const { data } = await authApi.post('login', { correo: Correo , password: Password });
       localStorage.setItem('x-token', data.token);
       localStorage.setItem('token-init-date', new Date().getTime());
       onLogin({
-        id: data.id,
-        name: data.userName,
-        email: data.correo,
-        rol: data.rol,
-        edad: data.edad,
-        avatar: data.avatar,
+        id: data.user.id,
+        name: data.user.nombre,
+        email: data.user.correo,
+        rol: data.user.rol,
+        edad: data.user.edad,
+        avatar: data.user.avatar,
       });
     } catch (error) {
       console.log(error);
@@ -48,8 +71,6 @@ export const useAuthStore = (state, setState) => {
     try {
       const response = await authApi.post('register', { Nombre, Correo, Password, Edad });
       Swal.fire('Registro exitoso', 'Usuario registrado correctamente', 'success');
-      console.log(response.data)
-      console.log(response.data.user)
       await startLogin(response.data.user); 
 
     } catch (error) {
@@ -57,24 +78,22 @@ export const useAuthStore = (state, setState) => {
       Swal.fire('Error', 'Hubo un error al registrar el usuario', 'error');
     }
   }, [startLogin]);
+
   const checkAuthToken = useCallback(async () => {
     const token = localStorage.getItem('x-token');
     if (!token) return onLogout();
-
+  
     try {
       const { data } = await authApi.get('renew');
       localStorage.setItem('x-token', data.token);
       localStorage.setItem('token-init-date', new Date().getTime());
-      let nacimiento = data.nacimiento.join('-');
       onLogin({
-        id: data.id,
-        name: data.userName,
-        apellido: data.apellido,
-        email: data.correo,
-        rol: data.rol,
-        edad: data.edad,
-        nacimiento: nacimiento,
-        avatar: data.avatar,
+        id: data.user.id,
+        name: data.user.nombre,
+        email: data.user.correo,
+        rol: data.user.rol,
+        edad: data.user.edad,
+        avatar: data.user.avatar,
       });
     } catch (error) {
       console.log(error);
@@ -87,10 +106,12 @@ export const useAuthStore = (state, setState) => {
     status: state.status,
     user: state.user,
     errorMenssage: state.errorMenssage,
-
+    users: state.users,
+    
     startLogin,
     startRegister,
     checkAuthToken,
+    starGetUsers,
     onLogout,
   };
 };

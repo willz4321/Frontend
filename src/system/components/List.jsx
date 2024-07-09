@@ -19,7 +19,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { visuallyHidden } from '@mui/utils';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
+import { AppContext } from '../../context/AppProvider';
+import { Await } from 'react-router-dom';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { AddProduct } from './AddProduct';
+import { AddCategory } from './AddCategory';
+import Swal from 'sweetalert2';
+import { AddUser } from './AddUser';
 
 function createData(id, name, calories, fat, carbs, protein) {
   return {
@@ -64,41 +71,8 @@ function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-const headCells = [
-  {
-    id: 'name',
-    numeric: false,
-    disablePadding: true,
-    label: 'Dessert (100g serving)',
-  },
-  {
-    id: 'calories',
-    numeric: true,
-    disablePadding: false,
-    label: 'Calories',
-  },
-  {
-    id: 'fat',
-    numeric: true,
-    disablePadding: false,
-    label: 'Fat (g)',
-  },
-  {
-    id: 'carbs',
-    numeric: true,
-    disablePadding: false,
-    label: 'Carbs (g)',
-  },
-  {
-    id: 'protein',
-    numeric: true,
-    disablePadding: false,
-    label: 'Protein (g)',
-  },
-];
-
 function EnhancedTableHead(props) {
-  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
+  const { order, orderBy, item, rowCount, onRequestSort, headCells } =
     props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -110,9 +84,9 @@ function EnhancedTableHead(props) {
         <TableCell padding="checkbox">
           <Checkbox
             color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
+            indeterminate={item != null && item < rowCount}
+            checked={item != null && item === rowCount}
+           
             inputProps={{
               'aria-label': 'select all desserts',
             }}
@@ -145,81 +119,139 @@ function EnhancedTableHead(props) {
 }
 
 EnhancedTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
+  headCells: PropTypes.any,
+  item: PropTypes.any,
   onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   orderBy: PropTypes.string.isRequired,
   rowCount: PropTypes.number.isRequired,
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected } = props;
-  return (
-    <Toolbar
-      sx={[
-        {
-          pl: { sm: 2 },
-          pr: { xs: 1, sm: 1 },
-        },
-        numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-        },
-      ]}
-    >
-      {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} Seleccionado/s
-        </Typography>
-      ) : (
-        <Typography
-          sx={{ flex: '1 1 100%' }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-           Productos
-        </Typography>
-      )}
+  const [openDialog, setOpenDialog] = useState(false);
+  const {starDeleteProduct, starDeleteCategory} = useContext(AppContext)
+  const { item, tipo, setSelected } = props;
 
-      {numSelected > 0 ? (
-        <>
-            <Tooltip  title={<span style={{ fontSize: '1.5em' }}>Eliminar</span>}>
-            <IconButton>
-                <DeleteIcon />
+  const handleClose = () => [
+    setOpenDialog(false)
+  ]
+
+  const deleteItem = async(item) => {
+    Swal.fire({
+      title: "Esta seguro que desea eliminar?",
+      showDenyButton: true,
+      confirmButtonText: "Eliminar",
+      customClass: {
+        container: 'swal2-container'
+      }
+    }).then(async (result) => { 
+      if (result.isConfirmed) {
+        if (tipo == 'productos') {
+           await starDeleteProduct(item)
+           setSelected(null)
+        }else if (tipo == 'categorias') {
+           await starDeleteCategory(item)
+           setSelected(null)
+        } 
+      } 
+    });
+  }
+
+  return (
+    <>
+      <Toolbar
+        sx={[
+          {
+            pl: { sm: 2 },
+            pr: { xs: 1, sm: 1 },
+          },
+          item > 0 && {
+            bgcolor: (theme) =>
+              alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+          },
+        ]}
+      >
+        {item != null ? (
+          <Typography
+            sx={{ flex: '1 1 100%' }}
+            color="inherit"
+            variant="subtitle1"
+            component="div"
+          >
+            {item.id} - {item.nombre}
+          </Typography>
+        ) : (
+          <Typography
+            sx={{ flex: '1 1 100%' }}
+            variant="h6"
+            id="tableTitle"
+            component="div"
+          >
+            Productos
+          </Typography>
+        )}
+
+        {item != null ? (
+          <>
+              <Tooltip  title={<span style={{ fontSize: '1.5em' }}>Eliminar</span>}>
+              <IconButton onClick={() => deleteItem(item)}>
+                  <DeleteIcon />
+              </IconButton>
+              </Tooltip>
+              <Tooltip  title={<span style={{ fontSize: '1.5em' }}>Modificar</span>}>
+              <IconButton onClick={() => setOpenDialog(true)} > 
+              <SettingsIcon />
+              </IconButton>
+          </Tooltip>
+          </>
+        ) : (
+          <Tooltip   title={<span style={{ fontSize: '1.5em' }}>Agregar nuevo producto</span>}>
+            <IconButton onClick={() => setOpenDialog(true)} >
+              <AddIcon />
             </IconButton>
-            </Tooltip>
-            <Tooltip  title={<span style={{ fontSize: '1.5em' }}>Modificar</span>}>
-            <IconButton>
-            <SettingsIcon />
-            </IconButton>
-        </Tooltip>
-        </>
-      ) : (
-        <Tooltip   title={<span style={{ fontSize: '1.5em' }}>Agregar nuevo producto</span>}>
-          <IconButton>
-            <AddIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Toolbar>
+          </Tooltip>
+        )}
+      </Toolbar>
+      <article>
+     {
+       tipo == 'productos' ? (
+        <Dialog open={openDialog} onClose={handleClose} maxWidth='xs'>
+          <DialogTitle>Agregar un Producto</DialogTitle>
+          <DialogContent>
+                  <AddProduct productoEdit={item} />
+          </DialogContent>
+        </Dialog>
+       ): tipo == 'categorias' ? (
+        <Dialog open={openDialog} onClose={handleClose} maxWidth='xs'>
+          <DialogTitle>Agregar una Categoría</DialogTitle>
+          <DialogContent>
+                  <AddCategory categoryEdit={item} />
+          </DialogContent>
+        </Dialog>
+       ) : tipo == 'usuarios' ? (
+        <Dialog open={openDialog} onClose={handleClose} maxWidth='xs'>
+          <DialogTitle>Agregar un usuario</DialogTitle>
+          <DialogContent>
+                  <AddUser userEdit={item} />
+          </DialogContent>
+        </Dialog>
+       ): null
+     }
+      </article>
+    </>
   );
 }
 
 EnhancedTableToolbar.propTypes = {
-  numSelected: PropTypes.number.isRequired,
+  item: PropTypes.any,
+  tipo: PropTypes.any.isRequired,
+  setSelected: PropTypes.func,
 };
 
-export const List = () => {
+export const List = ({headCells, rows, tipo}) => {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
-  const [selected, setSelected] = useState([]);
+  const [selected, setSelected] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -229,32 +261,8 @@ export const List = () => {
     setOrderBy(property);
   };
 
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelected = rows.map((n) => n.id);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
-    setSelected(newSelected);
+  const handleClick = (event, row) => {
+    setSelected(selected === row ? null : row);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -266,24 +274,30 @@ export const List = () => {
     setPage(0);
   };
 
-
-  const isSelected = (id) => selected.indexOf(id) !== -1;
-
+  const isSelected = (id) => {
+    if (selected && selected.id === id) {
+      return true;
+    }
+    return false;
+  };
+  
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   const visibleRows = useMemo(
+    
     () =>
+    
       [...rows]
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage],
+    [order, orderBy, page, rowsPerPage, rows],
   );
 
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar item={selected} tipo={tipo} setSelected={setSelected} />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -291,52 +305,129 @@ export const List = () => {
             size={'medium'}
           >
             <EnhancedTableHead
-              numSelected={selected.length}
+              item={selected}
               order={order}
               orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              headCells={headCells}
             />
             <TableBody>
               {visibleRows.map((row, index) => {
                 const isItemSelected = isSelected(row.id);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.id)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
+               if (tipo == 'categorias') {
+
+               }
+               switch (tipo) {
+                case 'productos':
+                  return (
+                    <TableRow
+                      hover
+                      onClick={(event) => handleClick(event, row)}
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                      sx={{ cursor: 'pointer' }}
                     >
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="right">{row.calories}</TableCell>
-                    <TableCell align="right">{row.fat}</TableCell>
-                    <TableCell align="right">{row.carbs}</TableCell>
-                    <TableCell align="right">{row.protein}</TableCell>
-                  </TableRow>
-                );
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          inputProps={{
+                            'aria-labelledby': labelId,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                      >
+                        {row.id}
+                      </TableCell>
+                      <TableCell align="left">{row.nombre}</TableCell>
+                      <TableCell align="right">{row.precio}</TableCell>
+                      <TableCell align="right">{row.descripcion}</TableCell>
+                    </TableRow>
+                  );
+            
+                case 'categorias':
+                  return (
+                    <TableRow
+                      hover
+                      onClick={(event) => handleClick(event, row)}
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          inputProps={{
+                            'aria-labelledby': labelId,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                      >
+                        {row.id}
+                      </TableCell>
+                      <TableCell align="left">{row.nombre}</TableCell>               
+                    </TableRow>
+                  );
+     
+                case 'usuarios':
+                  return (
+                    <TableRow
+                      hover
+                      onClick={(event) => handleClick(event, row)}
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          inputProps={{
+                            'aria-labelledby': labelId,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                      >
+                        {row.id}
+                      </TableCell>
+                      <TableCell align="left">{row.avatar}</TableCell>               
+                      <TableCell align="left">{row.nombre}</TableCell>               
+                      <TableCell align="left">{row.correo}</TableCell>               
+                      <TableCell align="left">{row.edad}</TableCell>               
+                    </TableRow>
+                  );
+                
+                default:
+                  break;
+               } 
               })}
               {emptyRows > 0 && (
                 <TableRow
