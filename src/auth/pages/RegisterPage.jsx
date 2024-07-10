@@ -1,8 +1,9 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Button, Card, CardActions, CardContent, CardHeader, Grid, Link, TextField, Typography } from '@mui/material';
+import { Box, Button, Card, CardActions, CardContent, CardHeader, Grid, IconButton, InputAdornment, Link, TextField, Typography } from '@mui/material';
 import { useForm } from '../../hooks';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../context/AppProvider';
+import { EyeFilledIcon, EyeSlashFilledIcon } from '../../assets';
 
 
 const formData = {
@@ -20,8 +21,11 @@ const formValidations = {
 }
 
 export const RegisterPage = () => {
-  const { startRegister } = useContext(AppContext);
+  const { startRegister, user } = useContext(AppContext);
   const [formSubmitted, setformSubmitted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const toggleVisibility = () => setIsVisible(!isVisible);
 
   const { Nombre, Correo, Password, Edad, onInputChange,
            NombreValid, CorreoValid, PasswordValid, EdadValid,
@@ -55,6 +59,7 @@ export const RegisterPage = () => {
                         placeholder='Nombre completo' 
                         fullWidth
                         name='Nombre'
+                        required
                         value={Nombre}
                         onChange={onInputChange}
                         error={!!NombreValid && formSubmitted}
@@ -68,6 +73,7 @@ export const RegisterPage = () => {
                         type="number" 
                         placeholder='Ingresa tu edad' 
                         fullWidth
+                        required
                         name='Edad'
                         value={Edad}
                         onChange={onInputChange}
@@ -82,6 +88,7 @@ export const RegisterPage = () => {
                         type="email" 
                         placeholder='correo@google.com' 
                         fullWidth
+                        required
                         name='Correo'
                         value={Correo}
                         onChange={onInputChange}
@@ -93,14 +100,24 @@ export const RegisterPage = () => {
                     <Grid item xs={ 12 } sx={{ mt: 2 }}>
                     <TextField 
                         label="Contraseña" 
-                        type="password" 
+                        type={isVisible ? 'text' : 'password'}
                         placeholder='Contraseña' 
                         fullWidth
                         name='Password'
+                        required
                         value={Password}
                         onChange={onInputChange}
                         error={!!PasswordValid && formSubmitted}
                         helperText={PasswordValid}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton onClick={toggleVisibility}>
+                                {isVisible ? <EyeSlashFilledIcon /> : <EyeFilledIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
                     />
                     </Grid>
                     

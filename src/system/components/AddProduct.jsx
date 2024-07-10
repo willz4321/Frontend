@@ -8,11 +8,12 @@ export const AddProduct = ({ productoEdit}) => {
         nombre: '',
         descripcion: '',
         precio: null,
-        categoria: {}
+        category: {}
      })
 
     const handleChange = (event) => {
         const { name, value } = event.target;
+                
         setProducto((prevProducto) => ({
             ...prevProducto,
             [name]: value
@@ -27,6 +28,7 @@ export const AddProduct = ({ productoEdit}) => {
            await starEditeProduct(producto) 
         }
     }
+
     return (
         <Card>
           <CardContent xs={12}>
@@ -65,21 +67,24 @@ export const AddProduct = ({ productoEdit}) => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required>
                     <InputLabel id="demo-simple-select-label">Categoría</InputLabel>
                     <Select
+                    required
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={producto.Categoria?.nombre}
+                    name='category'
+                    value={producto?.category}
                     label="Categoría"
                     onChange={handleChange}
                     >
                    {categories.map((cat) => (
                      <MenuItem
                         key={cat.id}
-                        value={cat.nombre}
+                        value={cat}
+                        required
                         >
-                        {cat.Nombre}
+                        {cat.nombre}
                       </MenuItem>
                     ))}
                     </Select>

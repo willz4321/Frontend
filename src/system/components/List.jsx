@@ -22,7 +22,7 @@ import { visuallyHidden } from '@mui/utils';
 import { useContext, useMemo, useState } from 'react';
 import { AppContext } from '../../context/AppProvider';
 import { Await } from 'react-router-dom';
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack } from '@mui/material';
 import { AddProduct } from './AddProduct';
 import { AddCategory } from './AddCategory';
 import Swal from 'sweetalert2';
@@ -72,8 +72,8 @@ function getComparator(order, orderBy) {
 }
 
 function EnhancedTableHead(props) {
-  const { order, orderBy, item, rowCount, onRequestSort, headCells } =
-    props;
+  const { order, orderBy, item, rowCount, onRequestSort, headCells } = props;
+    const {user} = useContext(AppContext)
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -129,33 +129,27 @@ EnhancedTableHead.propTypes = {
 
 function EnhancedTableToolbar(props) {
   const [openDialog, setOpenDialog] = useState(false);
-  const {starDeleteProduct, starDeleteCategory} = useContext(AppContext)
+  const [openDelete, setOpenDelete] = useState(false);
+  const {user} = useContext(AppContext)
   const { item, tipo, setSelected } = props;
 
   const handleClose = () => [
     setOpenDialog(false)
   ]
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+  };
 
-  const deleteItem = async(item) => {
-    Swal.fire({
-      title: "Esta seguro que desea eliminar?",
-      showDenyButton: true,
-      confirmButtonText: "Eliminar",
-      customClass: {
-        container: 'swal2-container'
-      }
-    }).then(async (result) => { 
-      if (result.isConfirmed) {
-        if (tipo == 'productos') {
-           await starDeleteProduct(item)
-           setSelected(null)
-        }else if (tipo == 'categorias') {
-           await starDeleteCategory(item)
-           setSelected(null)
-        } 
-      } 
-    });
-  }
+  const handleConfirm = async () => {
+    if (tipo === 'productos') {
+      await starDeleteProduct(item);
+    } else if (tipo === 'categorias') {
+      await starDeleteCategory(item);
+    } else if (tipo === 'usuarios') {
+      await starDeleteUser(item);
+    }
+    setOpenDelete(false);
+  };
 
   return (
     <>
@@ -191,10 +185,10 @@ function EnhancedTableToolbar(props) {
           </Typography>
         )}
 
-        {item != null ? (
+        {item != null && user.rol == 0? (
           <>
               <Tooltip  title={<span style={{ fontSize: '1.5em' }}>Eliminar</span>}>
-              <IconButton onClick={() => deleteItem(item)}>
+              <IconButton onClick={() => setOpenDelete(true)}>
                   <DeleteIcon />
               </IconButton>
               </Tooltip>
@@ -236,6 +230,24 @@ function EnhancedTableToolbar(props) {
           </DialogContent>
         </Dialog>
        ): null
+     }
+     {
+          <Dialog open={openDelete} onClose={handleCloseDelete}>
+          <DialogTitle>Esta seguro que desea eliminar?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Esta acción no se puede deshacer.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete} color="primary">
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirm} color="error">
+              Eliminar
+            </Button>
+          </DialogActions>
+        </Dialog>
      }
       </article>
     </>
@@ -295,12 +307,12 @@ export const List = ({headCells, rows, tipo}) => {
   );
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box position='static' sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar item={selected} tipo={tipo} setSelected={setSelected} />
         <TableContainer>
           <Table
-            sx={{ minWidth: 750 }}
+            sx={{ minWidth: 300 }}
             aria-labelledby="tableTitle"
             size={'medium'}
           >
@@ -353,6 +365,7 @@ export const List = ({headCells, rows, tipo}) => {
                       <TableCell align="left">{row.nombre}</TableCell>
                       <TableCell align="right">{row.precio}</TableCell>
                       <TableCell align="right">{row.descripcion}</TableCell>
+                      <TableCell align="right">{row.category.nombre}</TableCell>
                     </TableRow>
                   );
             
@@ -418,7 +431,15 @@ export const List = ({headCells, rows, tipo}) => {
                       >
                         {row.id}
                       </TableCell>
-                      <TableCell align="left">{row.avatar}</TableCell>               
+                      <TableCell align="left">
+                      <Stack direction="row" spacing={2}>
+                        <Avatar
+                          alt="Remy Sharp"
+                          src={`data:image/jpeg;base64,${row.avatar}`}
+                          sx={{ width: 70, height: 70 }}
+                        />
+                      </Stack>
+                        </TableCell>               
                       <TableCell align="left">{row.nombre}</TableCell>               
                       <TableCell align="left">{row.correo}</TableCell>               
                       <TableCell align="left">{row.edad}</TableCell>               

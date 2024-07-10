@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -14,14 +14,16 @@ import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { AppContext } from '../../context/AppProvider';
 
 const pages = [{name:'Productos', uid: 'productos'}, {name: 'Categorías', uid: 'categorias'}];
 const settings = [{name:'Perfil', uid: 'perfil'}, {name:'Usuarios', uid: 'usuarios'}, {name:'Logout', uid: 'logout'}];
 
 function MenuApp() {
+  const { onLogout, user} = useContext(AppContext);
+
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
-
   const navigate = useNavigate();
 
   const handleOpenNavMenu = (event) => {
@@ -39,6 +41,9 @@ function MenuApp() {
 
   const handleCloseUserMenu = (uid) => {
     if (uid!=null) {
+      if (uid == 'logout') {
+        onLogout(null)
+      }
       navigate(`/${uid}`);
       setAnchorElUser(null);
     }else{
@@ -134,9 +139,9 @@ function MenuApp() {
             ))}
           </Box>
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Configuraciones">
+            <Tooltip title={<span style={{ fontSize: '1.5em' }}>Configuraciones</span>}>
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt={`${user?.nombre}`} src={`data:image/jpeg;base64,${user?.avatar}`}  sx={{ width: 60, height: 60 }} />
               </IconButton>
             </Tooltip>
             <Menu
@@ -156,8 +161,8 @@ function MenuApp() {
               onClose={() => handleCloseUserMenu(null)}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting.uid} onClick={() => handleCloseUserMenu(setting.uid)}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting.name}</Typography>
+                <MenuItem key={setting.uid} onClick={() => handleCloseUserMenu(setting.uid)} disabled={setting.uid == 'usuarios' && user?.rol != 0} >
+                  <Typography sx={{ textAlign: 'center' }} >{setting.name}</Typography>
                 </MenuItem>
               ))}
             </Menu>

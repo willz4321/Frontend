@@ -1,20 +1,23 @@
 import React, { useContext, useState } from 'react'
 import { AppContext } from '../../context/AppProvider';
 import { Password } from '@mui/icons-material';
-import { Button, Card, CardContent, FormControl, Grid, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Button, Card, CardContent, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { EyeFilledIcon, EyeSlashFilledIcon } from '../../assets';
 
 export const AddUser = ({userEdit}) => {
-    const {starAddCategory, starEditeCategory} = useContext(AppContext)
+    const {startCreateUser, startEditUser} = useContext(AppContext)
 
+    const [isVisible, setIsVisible] = useState(false);
     const [usuario, setUsuario] = useState(userEdit || {
         nombre: '',
         correo: '',
-        Password: '',
-        passwordValid: '',
+        password: '',
         rol: '',
         edad: null,
 
      })
+
+   const toggleVisibility = () => setIsVisible(!isVisible);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -27,9 +30,9 @@ export const AddUser = ({userEdit}) => {
     const handleSubmit = async(event) => {
         event.preventDefault()
         if (userEdit == null) {
-          await starAddCategory(usuario)
+          await startCreateUser(usuario)
         }else {
-           await starEditeCategory(usuario) 
+           await startEditUser(usuario) 
         }
     }
 
@@ -40,7 +43,7 @@ export const AddUser = ({userEdit}) => {
               <Grid container spacing={5}>
                 <Grid item xs={12}>
                   <TextField
-                    label="Nombre de la Categoría"
+                    label="Nombre de Usuario"
                     name="nombre"
                     type='text'
                     value={usuario.nombre}
@@ -51,7 +54,7 @@ export const AddUser = ({userEdit}) => {
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
-                    label="Correo Electrionico"
+                    label="Correo Electrónico"
                     type='email'
                     name="correo"
                     value={usuario.correo}
@@ -63,23 +66,21 @@ export const AddUser = ({userEdit}) => {
                 <Grid item xs={12}>
                   <TextField
                     label="Contraseña"
-                    name="Password"
-                    type='password'
-                    value={usuario.Password}
+                    name="password"
+                    type={isVisible ? 'text' : 'password'}
+                    value={usuario.password}
                     onChange={handleChange}
                     required
                     fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Confirma la Contraseña"
-                    name="passwordValid"
-                    type='password'
-                    value={usuario.passwordValid}
-                    onChange={handleChange}
-                    required
-                    fullWidth
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={toggleVisibility}>
+                            {isVisible ? <EyeSlashFilledIcon /> : <EyeFilledIcon />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} display="flex" flexDirection="row" gap={2}>
@@ -102,10 +103,11 @@ export const AddUser = ({userEdit}) => {
                     id="demo-simple-select"
                     value={usuario.rol}
                     label="Rol"
+                    name='rol'
                     onChange={handleChange}
                     >
-                      <MenuItem value={'ADMIN'}>ADMIN</MenuItem>
-                      <MenuItem value={'REGUNLAR'}>REGUNLAR</MenuItem>
+                      <MenuItem value={0}>ADMIN</MenuItem>
+                      <MenuItem value={1}>REGULAR</MenuItem>
                     </Select>
                  </FormControl>
                  </Grid>

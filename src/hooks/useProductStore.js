@@ -51,7 +51,12 @@ export const useProductStore = (state, setState) => {
              }
       },[getProducts])
     
-      const starAddProduct = useCallback( async(producto) => {
+      const starAddProduct = useCallback( async(product) => {
+        const {category, ...p} = product
+        const producto = {
+          ...product,
+          categoryId: category.id
+        }
         try {
               const { data } = await systemApi.post('Products', producto);
               pushProducts(data)
@@ -64,6 +69,7 @@ export const useProductStore = (state, setState) => {
                 }
               });              
             } catch (error) {
+              console.log(error)
               Swal.fire({
                 title: 'Error al guardar',
                 text: `Error al guardar el producto: ${error}`,

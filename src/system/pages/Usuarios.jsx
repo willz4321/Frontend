@@ -1,5 +1,7 @@
 import { Box, Card, CardContent, CardHeader, Divider } from "@mui/material"
 import { List } from "../components"
+import { useContext } from "react";
+import { AppContext } from "../../context/AppProvider";
 
 const columnas = [
   {
@@ -35,6 +37,8 @@ const columnas = [
 ]
 
 export const Usuarios = ({usuarios}) => {
+  const {user} = useContext(AppContext);
+  const filteredUsers = usuarios.filter(usuario => usuario.id != user.id);
   return (
     <Box  display="flex"  justifyContent="center" alignItems="center" minHeight="80%" bgcolor="background.default">
     <Card sx={{ width: '100%', maxWidth: '70%', p: 2 }}>
@@ -42,7 +46,7 @@ export const Usuarios = ({usuarios}) => {
              <Divider/>
            <CardContent>
            <Box display="flex" flexDirection="column" gap={2}>
-              <List rows={usuarios} headCells={columnas} tipo={'usuarios'}/>
+              <List rows={filteredUsers} headCells={columnas} tipo={'usuarios'}/>
             </Box>
            </CardContent>
     </Card>

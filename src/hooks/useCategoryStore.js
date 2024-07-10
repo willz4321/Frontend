@@ -32,8 +32,7 @@ export const useCategoryStore = (state, setState) => {
       ...prevState,
       categories: prevState.categories.filter(category => category.id !== categoryIdToDelete)
     }));
-  }, [setState]);
-  
+  }, [setState]); 
 
   const starGetCategories = useCallback( async() => {
          try {
@@ -64,6 +63,7 @@ export const useCategoryStore = (state, setState) => {
             }
           });              
         } catch (error) {
+          console.log(error)
           Swal.fire({
             title: 'Error',
             text: `Error al guardar la categoría: ${error}`,
