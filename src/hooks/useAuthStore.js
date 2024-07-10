@@ -208,6 +208,55 @@ export const useAuthStore = (state, setState) => {
     }
   }, [onLogin, onLogout]);
 
+  const starResetPassword = useCallback(async (email) => {
+  console.log(email)
+       try {
+        await authApi.get(`reset-password?email=${email}`);
+            Swal.fire({
+              title: 'Perfecto',
+              text: 'Enviamos el link , revisa tu casilla',
+              icon: 'success',
+              customClass: {
+                container: 'swal2-container'
+              }
+            });
+       } catch (error) {
+        console.log(error)
+        Swal.fire({
+          title: 'Error',
+          text: `Error al enviar correo: ${error}`,
+          icon: 'error',
+          customClass: {
+            container: 'swal2-container'
+          }
+        });  
+       }
+  },[])
+
+  const starCreatePassword = useCallback(async (usuario) => {
+     try {
+      await authApi.post(`reset-password-confirm`, usuario);
+      Swal.fire({
+        title: 'Perfecto',
+        text: 'Se restablecio la contraseña',
+        icon: 'success',
+        customClass: {
+          container: 'swal2-container'
+        }
+      });
+     } catch (error) {
+      console.log(error)
+      Swal.fire({
+        title: 'Error',
+        text: `Error al restaurar: ${error}`,
+        icon: 'error',
+        customClass: {
+          container: 'swal2-container'
+        }
+      }); 
+     }
+  },[])
+  
   return {
     status: state.status,
     user: state.user,
@@ -218,6 +267,8 @@ export const useAuthStore = (state, setState) => {
     startRegister,
     starDeleteUser,
     startCreateUser,
+    starResetPassword,
+    starCreatePassword,
     startEditMyUser,
     checkAuthToken,
     startEditUser,

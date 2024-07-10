@@ -312,9 +312,8 @@ export const List = ({headCells, rows, tipo}) => {
         <EnhancedTableToolbar item={selected} tipo={tipo} setSelected={setSelected} />
         <TableContainer>
           <Table
-            sx={{ minWidth: 300 }}
             aria-labelledby="tableTitle"
-            size={'medium'}
+            size="medium"
           >
             <EnhancedTableHead
               item={selected}

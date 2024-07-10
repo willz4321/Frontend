@@ -71,7 +71,7 @@ export const User = () => {
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="80%" bgcolor="background.default">
-      <Card sx={{ maxWidth: '50%', p: 2 }}>
+      <Card sx={{ maxWidth: 'auto', p: 2 }}>
         <CardHeader title="Mi Perfil" />
         <Divider />
         <CardContent>

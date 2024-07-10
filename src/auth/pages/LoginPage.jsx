@@ -12,7 +12,7 @@ const loginFormFields = {
 };
 
 export const LoginPage = () => {
-  const { startLogin, errorMenssage, status } = useContext(AppContext);
+  const { startLogin, starResetPassword, status } = useContext(AppContext);
   const [isVisible, setIsVisible] = useState(false);
   const isAuthenticating = useMemo(() => status === 'checking', [status]);
   const { loginEmail, loginPassword, onInputChange: onLoginInputChange } = useForm(loginFormFields);
@@ -23,6 +23,10 @@ export const LoginPage = () => {
     event.preventDefault();
     startLogin({ Correo: loginEmail, Password: loginPassword });
   };
+ 
+  const hanleResetPassword = async() => {
+       await starResetPassword(loginEmail)
+  }
 
   // useEffect(() => {
   //   if (errorMenssage == undefined) {
@@ -94,7 +98,7 @@ export const LoginPage = () => {
                   Crear una cuenta
                 </Link>
               </Grid>
-              <Button color="warning" variant="outlined">
+              <Button color="warning" variant="outlined" onClick={hanleResetPassword} disabled={!loginEmail}>
                 Restablecer contraseña
               </Button>
             </Box>

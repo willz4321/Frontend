@@ -1,14 +1,17 @@
-import{ useState } from 'react';
+import{ useContext, useState } from 'react';
 import { Button, TextField, Grid, Paper, Typography, Alert, AlertTitle } from '@mui/material'
 import { jwtDecode } from "jwt-decode";
 
 import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../../context/AppProvider';
 
 export const ResetPasswordPage = () => {
+  const {starCreatePassword} = useContext(AppContext)
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showAlert, setShowAlert] = useState('');
+
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,16 +24,16 @@ const handleResetPassword = async(event) => {
   } else {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    console.log(token)
     try {
       const decodedToken = jwtDecode(token);
-      const email = decodedToken.correo;
+      const email = decodedToken.email;
       console.log(email)
       const usuario = {
-        correo: email,
-        password: newPassword
+        email,
+        newPassword: newPassword, 
+        token
       }
-      await starCreatNewPassword(usuario);
+      await starCreatePassword(usuario);
 
         setShowAlert('exito');
         
